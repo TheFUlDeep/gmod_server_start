@@ -194,9 +194,8 @@ void CheckServerInOnline()
         std::ostringstream os;
         os << res;
         string str = os.str();
-        bool notonline = false;
-        if (str.find(fulladdr) == string::npos) notonline = true;
-        if (notonline)
+
+        if (str.find(fulladdr) == string::npos)
         {
             bad_responses++;
             if (bad_responses == 5)
