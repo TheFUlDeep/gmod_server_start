@@ -96,9 +96,9 @@ void StartServer(char** argv)
     port = adminargsstack.top(); adminargsstack.pop();
 
     windowtitle1 = name + " server watchdog";
-    const string start = ("@echo off\ncls\necho Protecting srcds from crashes...\ntitle " + windowtitle1 + "\n:srcds\necho (%date%) (%time%) srcds started.\n");
+    const string start = ("@echo off\ncls\necho Protecting srcds from crashes...\ntitle " + windowtitle1 + "\n:srcds\necho (%date% %time%) srcds started.\n");
     const string prestartargs = (start + "cd ./server\nstart /wait /high /min /affinity " + affinity + " srcds.exe -nocrashdialog -console -tickrate 20 -autoupdate -game garrysmod -port " + port + " ");
-    const string end = "\necho (%date%) (%time%) WARNING: srcds closed or crashed, restarting.\ngoto srcds";
+    const string end = "\necho (%date% %time%) WARNING: srcds closed or crashed, restarting.\ngoto srcds";
 
     const string startargs = GetStartArgs();
 
@@ -113,17 +113,8 @@ void StartServer(char** argv)
         //cout << "added start" << endl;
     }
 
-    string windowtitle2 = name + " start_of_start";
-    f = ofstream("start_of_start.bat");
-    if (f.is_open())
-    {
-        f << string("@echo off\ncls\necho Protecting " + windowtitle1 + " from crashes...\ntitle " + windowtitle2 + "\n:srcds\necho (%date%) (%time%) " + windowtitle1 + " started.\nstart /wait start.bat\necho (%date%) (%time%) WARNING : " + windowtitle1 + " closed or crashed, restarting.\ngoto srcds");
-        f.close();
-        //cout << "added start_of_start" << endl;
-    }
-
     //system("pause");
-    system("start start_of_start.bat");
+    system("start start.bat");
     //-condebug
 }
 
@@ -201,7 +192,9 @@ void CheckServerInOnline()
             if (bad_responses == 5)
             {
                 string command = string("taskkill /F /FI ") + '"' + "WINDOWTITLE eq " + windowtitle1 + '"' + " /T";
+                system("echo (%date% %time%) server didnt rersponse for 5 times. Restarting...");
                 system(command.c_str());
+                system("start start.bat");
                 bad_responses = 0;
             }
         }
