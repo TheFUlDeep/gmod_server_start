@@ -115,6 +115,7 @@ void StartServer(char** argv)
 
     //system("pause");
     system("start start.bat");
+    system(string("echo (%date% %time%) " + windowtitle1 + " started").c_str());
     //-condebug
 }
 
