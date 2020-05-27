@@ -159,7 +159,7 @@ void CheckServerInOnline()
 
     auto myip = GetMyIP();
     if (myip == "") return;
-    string fulladdr = GetMyIP() + ":" + port;
+    string fulladdr = myip + ":" + port;
 
     const std::string host = "api.steampowered.com";
     const std::string target = "/ISteamApps/GetServersAtAddress/v1/?addr=" + fulladdr;
