@@ -157,6 +157,8 @@ void CheckServerInOnline()
     cout << stream.rdbuf();
     */
 
+    auto myip = GetMyIP();
+    if (myip == "") return;
     string fulladdr = GetMyIP() + ":" + port;
 
     const std::string host = "api.steampowered.com";
