@@ -3,7 +3,6 @@ insecure=TRUE
 authkey=FALSE
 
 #+
-gamemode=sandbox
 sv_setsteamaccount=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 host_workshop_collection=xxxxx
 maxplayers=15

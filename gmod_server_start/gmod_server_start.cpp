@@ -38,7 +38,7 @@ argsstack FileLinesToStack(const char *file)
 }
 
 const char* argsminus[]{ "insecure","authkey" };
-const char* argsplus[]{ "sv_setsteamaccount","host_workshop_collection","maxplayers","map","gamemode" };
+const char* argsplus[]{ "sv_setsteamaccount","host_workshop_collection","maxplayers","map" };
 
 const string GetStartArgs()
 {
