@@ -75,8 +75,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>E:\Downloads\C++\gmod_server_start\HTTPRequest\include;$(IncludePath)</IncludePath>
-    <LibraryPath>E:\Downloads\C++\gmod_server_start\HTTPRequest\include;$(LibraryPath)</LibraryPath>
+    <IncludePath>E:\Downloads\C++\boost_1_73_0;$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
