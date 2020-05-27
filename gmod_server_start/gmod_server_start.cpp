@@ -146,10 +146,11 @@ const string GetMyIP()
     return "";
 }
 
+char bad_responses = 0;
 
 void CheckServerInOnline()
 {
-    this_thread::sleep_for(std::chrono::seconds(300));
+    this_thread::sleep_for(std::chrono::seconds(60));
 
     /*
     boost::asio::ip::tcp::iostream stream("api.steampowered.com", "http");
@@ -193,13 +194,19 @@ void CheckServerInOnline()
         std::ostringstream os;
         os << res;
         string str = os.str();
-        bool online = false;
-        if (str.find(fulladdr))online = true;
-        if (!online)
+        bool notonline = false;
+        if (str.find(fulladdr) == string::npos) notonline = true;
+        if (notonline)
         {
-            string command = string("taskkill /F /FI ") + '"' + "WINDOWTITLE eq " + windowtitle1 + '"' + " /T";
-            system(command.c_str());
+            bad_responses++;
+            if (bad_responses == 5)
+            {
+                string command = string("taskkill /F /FI ") + '"' + "WINDOWTITLE eq " + windowtitle1 + '"' + " /T";
+                system(command.c_str());
+                bad_responses = 0;
+            }
         }
+        else bad_responses = 0;
     }
     // Закрываем соединение
     socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
