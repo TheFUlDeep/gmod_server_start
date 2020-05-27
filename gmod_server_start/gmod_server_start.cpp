@@ -193,13 +193,11 @@ void CheckServerInOnline()
         std::ostringstream os;
         os << res;
         string str = os.str();
-        std::cout << str << std::endl;
         bool online = false;
         if (str.find(fulladdr))online = true;
         if (!online)
         {
             string command = string("taskkill /F /FI ") + '"' + "WINDOWTITLE eq " + windowtitle1 + '"' + " /T";
-            cout << command << endl;
             system(command.c_str());
         }
     }
@@ -212,7 +210,6 @@ int main(int argc, char** argv)
 {
     bool notprogramend = true;
     StartServer(argv);
-    //CheckServerInOnline();
 
     thread t([&notprogramend]() 
     {
