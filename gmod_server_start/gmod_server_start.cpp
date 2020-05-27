@@ -2,6 +2,14 @@
 #include <fstream>
 #include <string>
 #include <stack>
+#include <strstream>
+
+#include <chrono>
+#include <thread>
+
+#include "HTTPRequest.hpp"
+
+
 using namespace std;
 
 typedef stack<string> argsstack;
@@ -63,7 +71,9 @@ const string GetStartArgs()
     return str;
 }
 
-int main(int argc, char** argv)
+string port = "";
+
+void StartServer(char** argv)
 {
     string name = argv[0];
     auto backslash = name.rfind("\\");
@@ -73,7 +83,7 @@ int main(int argc, char** argv)
 
     auto adminargsstack = FileLinesToStack("adminargs.txt");
     const string affinity = adminargsstack.top(); adminargsstack.pop();
-    const string port = adminargsstack.top(); adminargsstack.pop();
+    port = adminargsstack.top(); adminargsstack.pop();
 
     string windowtitle1 = name + " server watchdog";
     const string start = ("@echo off\ncls\necho Protecting srcds from crashes...\ntitle " + windowtitle1 + "\n:srcds\necho (%date%) (%time%) srcds started.\n");
@@ -84,7 +94,7 @@ int main(int argc, char** argv)
 
     const string batcommand = (prestartargs + startargs + end);
 
-    
+
     ofstream f("start.bat");
     if (f.is_open())
     {
@@ -97,7 +107,7 @@ int main(int argc, char** argv)
     f = ofstream("start_of_start.bat");
     if (f.is_open())
     {
-        f << string("@echo off\ncls\necho Protecting " + windowtitle1 +" from crashes...\ntitle " + windowtitle2 + "\n:srcds\necho (%date%) (%time%) " + windowtitle1 + " started.\nstart /wait start.bat\necho (%date%) (%time%) WARNING : " + windowtitle1 + " closed or crashed, restarting.\ngoto srcds");
+        f << string("@echo off\ncls\necho Protecting " + windowtitle1 + " from crashes...\ntitle " + windowtitle2 + "\n:srcds\necho (%date%) (%time%) " + windowtitle1 + " started.\nstart /wait start.bat\necho (%date%) (%time%) WARNING : " + windowtitle1 + " closed or crashed, restarting.\ngoto srcds");
         f.close();
         //cout << "added start_of_start" << endl;
     }
@@ -105,5 +115,33 @@ int main(int argc, char** argv)
     //system("pause");
     system("start start_of_start.bat");
     //-condebug
+}
+
+void CheckServerInOnline()
+{
+    this_thread::sleep_for(std::chrono::seconds(10));
+    const string addr = "https://api.steampowered.com/";
+    //auto response = cpr::Get(cpr::Url{ "https://api.steampowered.com/ISteamApps/GetServersAtAddress/v1/?addr=77.37.178.206:27015" });
+
+    try
+    {
+        // you can pass http::InternetProtocol::V6 to Request to make an IPv6 request
+        http::Request request(addr);
+
+        // send a get request
+        const http::Response response = request.send("GET");
+        std::cout << std::string(response.body.begin(), response.body.end()) << '\n'; // print the result
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Request failed, error: " << e.what() << '\n';
+    }
+
+}
+
+int main(int argc, char** argv)
+{
+    //StartServer(argv);
+    while (true) CheckServerInOnline();
     return 0;
 }
