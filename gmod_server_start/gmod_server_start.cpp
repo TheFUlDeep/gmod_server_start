@@ -68,17 +68,15 @@ const string GetStartArgs()
         for (string word : argsminus)
         {
             if (eqleft != word) continue;
-            const string leftpart = '-' + eqleft;
-            str += leftpart + ' ';
-            if (line.find("=TRUE") != STRINGNPOS) str += (eqright + ' ');
+            str += ('-' + eqleft + ' ');
+            if (line.find("=TRUE") == STRINGNPOS) str += (eqright + ' ');
         }
 
         for (string word : argsplus)
         {
             if (eqleft != word) continue;
-            const string leftpart = '+' + eqleft;
-            str += leftpart + ' ';
-            if (line.find("=TRUE") != STRINGNPOS) str += (eqright + ' ');
+            str += ('+' + eqleft + ' ');
+            if (line.find("=TRUE") == STRINGNPOS) str += (eqright + ' ');
         }
 
     }
