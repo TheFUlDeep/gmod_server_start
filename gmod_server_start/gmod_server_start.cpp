@@ -57,8 +57,6 @@ const string GetStartArgs()
         const auto equalpos = line.find('=');
         if (equalpos == STRINGNPOS) continue;
 
-        string eqright = line.substr(equalpos + 1);
-
         //если в правой части есть + или -, то игнорить эту строку (для безопасности, чтобы нельзя было дописать свои аргументы)
         //возможно лучше делать проверку на + и - с пробелом, но если ни в одной команде нет ни + не -, то проще не менять
         //if (eqright.find('+') != STRINGNPOS || eqright.find('-') != STRINGNPOS /*|| eqright.find('=') != STRINGNPOS*/) continue; //закомментил проверку на второй знак =. Хз, надо его или нет
@@ -69,14 +67,14 @@ const string GetStartArgs()
         {
             if (eqleft != word) continue;
             str += ('-' + eqleft + ' ');
-            if (line.find("=TRUE") == STRINGNPOS) str += (eqright + ' ');
+            if (line.find("=TRUE") == STRINGNPOS) str += (line.substr(equalpos + 1) + ' ');
         }
 
         for (string word : argsplus)
         {
             if (eqleft != word) continue;
             str += ('+' + eqleft + ' ');
-            if (line.find("=TRUE") == STRINGNPOS) str += (eqright + ' ');
+            if (line.find("=TRUE") == STRINGNPOS) str += (line.substr(equalpos + 1) + ' ');
         }
 
     }
