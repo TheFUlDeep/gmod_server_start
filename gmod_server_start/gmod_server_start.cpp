@@ -69,16 +69,16 @@ const string GetStartArgs()
         {
             if (eqleft != word) continue;
             const string leftpart = '-' + eqleft;
-            if (line.find("=TRUE") != STRINGNPOS) eqright = "";
-            str += (leftpart + ' ' + eqright + ' ');
+            if (line.find("=TRUE") != STRINGNPOS) str += leftpart + ' ';
+            else str += (leftpart + ' ' + eqright + ' ');
         }
 
         for (string word : argsplus)
         {
             if (eqleft != word) continue;
             const string leftpart = '+' + eqleft;
-            if (line.find("=TRUE") != STRINGNPOS) eqright = "";
-            str += (leftpart + ' ' + eqright + ' ');
+            if (line.find("=TRUE") != STRINGNPOS) str += leftpart + ' ';
+            else str += (leftpart + ' ' + eqright + ' ');
         }
 
     }
