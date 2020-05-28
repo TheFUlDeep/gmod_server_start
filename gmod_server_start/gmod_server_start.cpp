@@ -53,7 +53,7 @@ const string GetStartArgs()
         linesstack.pop();
 
         //пропускаю закомментированные строки или неправильные строки (в которых нет знака =) или FALSE
-        if (line[0] == '#' || line.find("=FALSE") != STRINGNPOS) continue;
+        if (line[0] == '#' || line.find("=FALSE") != STRINGNPOS || line.find(' ') != STRINGNPOS || line.find('+') != STRINGNPOS || line.find('-') != STRINGNPOS) continue;
         const auto equalpos = line.find('=');
         if (equalpos == STRINGNPOS) continue;
 
@@ -61,7 +61,7 @@ const string GetStartArgs()
 
         //если в правой части есть + или -, то игнорить эту строку (для безопасности, чтобы нельзя было дописать свои аргументы)
         //возможно лучше делать проверку на + и - с пробелом, но если ни в одной команде нет ни + не -, то проще не менять
-        if (eqright.find('+') != STRINGNPOS || eqright.find('-') != STRINGNPOS /*|| eqright.find('=') != STRINGNPOS*/) continue; //закомментил проверку на второй знак =. Хз, надо его или нет
+        //if (eqright.find('+') != STRINGNPOS || eqright.find('-') != STRINGNPOS /*|| eqright.find('=') != STRINGNPOS*/) continue; //закомментил проверку на второй знак =. Хз, надо его или нет
 
         const string eqleft = line.substr(0, equalpos);
 
