@@ -212,8 +212,6 @@ int main(int argc, char** argv)
     bool notprogramend = true;
     StartServer(argv);
 
-    system("pause");
-
     thread t([&notprogramend]() 
     {
             while (notprogramend)
