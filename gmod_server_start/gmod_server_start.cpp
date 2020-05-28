@@ -23,15 +23,16 @@ using namespace std;
 namespace http = boost::beast::http;
 
 typedef stack<string> argsstack;
+const auto STRINGNPOS = string::npos;
 
 argsstack FileLinesToStack(const char *file)
 {
     argsstack stck;
-    std::ifstream f(file);
+    ifstream f(file);
     if (f.is_open()) 
     {
-        std::string line;
-        while (std::getline(f, line)) stck.push(line);
+        string line;
+        while (getline(f, line)) stck.push(line);
         f.close();
     }
     return stck;
@@ -48,32 +49,36 @@ const string GetStartArgs()
 
     while (!linesstack.empty())
     {
-        string line = linesstack.top();
+        const string line = linesstack.top();
         linesstack.pop();
 
         //пропускаю закомментированные строки или неправильные строки (в которых нет знака =) или FALSE
-        if (line[0] == '#' || line.find("=FALSE") != string::npos) continue;
-        size_t equalpos = line.find('=');
-        if (equalpos == string::npos) continue;
+        if (line[0] == '#' || line.find("=FALSE") != STRINGNPOS) continue;
+        const auto equalpos = line.find('=');
+        if (equalpos == STRINGNPOS) continue;
+
+        string eqright = line.substr(equalpos + 1);
+
+        //если в правой части есть + или -, то игнорить эту строку (для безопасности, чтобы нельзя было дописать свои аргументы)
+        //возможно лучше делать проверку на + и - с пробелом, но если ни в одной команде нет ни + не -, то проще не менять
+        if (eqright.find('+') != STRINGNPOS || eqright.find('-') != STRINGNPOS /*|| eqright.find('=') != STRINGNPOS*/) continue; //закомментил проверку на второй знак =. Хз, надо его или нет
+
+        const string eqleft = line.substr(0, equalpos);
 
         for (string word : argsminus)
         {
-            if (line.find(word) == string::npos) continue;
-            string leftpart = '-' + word;
-            string rightpart;
-            if (line.find("=TRUE") != string::npos) rightpart = "";
-            else rightpart = ' ' + line.substr(equalpos + 1);
-            str += (leftpart + rightpart + ' ');
+            if (eqleft != word) continue;
+            const string leftpart = '-' + eqleft;
+            if (line.find("=TRUE") != STRINGNPOS) eqright = "";
+            str += (leftpart + ' ' + eqright + ' ');
         }
 
         for (string word : argsplus)
         {
-            if (line.find(word) == string::npos) continue;
-            string leftpart = '+' + word;
-            string rightpart;
-            if (line.find("=TRUE") != string::npos) rightpart = "";
-            else rightpart = ' ' + line.substr(equalpos + 1);
-            str += (leftpart + rightpart + ' ');
+            if (eqleft != word) continue;
+            const string leftpart = '+' + eqleft;
+            if (line.find("=TRUE") != STRINGNPOS) eqright = "";
+            str += (leftpart + ' ' + eqright + ' ');
         }
 
     }
@@ -87,7 +92,7 @@ void StartServer(char** argv)
 {
     string name = argv[0];
     auto backslash = name.rfind("\\");
-    if (backslash != string::npos) name = name.substr(backslash + 1);
+    if (backslash != STRINGNPOS) name = name.substr(backslash + 1);
 
     setlocale(LC_ALL, "english");
 
@@ -121,14 +126,14 @@ void StartServer(char** argv)
 
 const string GetMyIP()
 {
-    std::ostringstream os;
+    ostringstream os;
     boost::asio::ip::tcp::iostream stream("httpbin.org", "http");
     stream << "GET /ip HTTP/1.1\r\nHost: httpbin.org\r\nConnection: close\r\n\r\n";
     os << stream.rdbuf();
     string str = os.str();
 
     auto originpos = str.find("origin");
-    if (originpos != string::npos)
+    if (originpos != STRINGNPOS)
     {
         str = str.substr(originpos + 10);
         auto secondpos = str.find('"');
@@ -183,11 +188,11 @@ void CheckServerInOnline()
         http::response<http::dynamic_body> res;
         http::read(socket, buffer, res);
 
-        std::ostringstream os;
+        ostringstream os;
         os << res;
         string str = os.str();
 
-        if (str.find(fulladdr) == string::npos)
+        if (str.find(fulladdr) == STRINGNPOS)
         {
             bad_responses++;
             if (bad_responses == 5)
@@ -210,6 +215,8 @@ int main(int argc, char** argv)
 {
     bool notprogramend = true;
     StartServer(argv);
+
+    system("pause");
 
     thread t([&notprogramend]() 
     {
