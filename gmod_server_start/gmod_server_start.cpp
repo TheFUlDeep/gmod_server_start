@@ -123,7 +123,7 @@ void StartServer()
 
     auto additionalargs = adminargsstack.top(); adminargsstack.pop(); DeleteSpacesInLine(additionalargs);
 
-    auto port = adminargsstack.top(); adminargsstack.pop(); DeleteSpacesInLine(port);
+    port = adminargsstack.top(); adminargsstack.pop(); DeleteSpacesInLine(port);
     /*try
     {
         port = to_string(stoi(port));
