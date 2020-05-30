@@ -40,6 +40,23 @@ argsstack FileLinesToStack(const char *file)
 const char* argsminus[]{ "insecure","authkey" };
 const char* argsplus[]{ "sv_setsteamaccount","host_workshop_collection","maxplayers","map" };
 
+void DeleteSpacesInLine(string& line)
+{
+    while (line.front() == ' ' || line.front() == '\t') line.erase(0,1);
+
+    while (line.back() == ' ' || line.back() == '\t') line.pop_back();
+}
+
+void RemoveSymbolFromString(string &str, const char &symbol)
+{
+    auto pos = str.find(symbol);
+    while (pos != STRINGNPOS)
+    {
+        str.erase(pos, 1);
+        pos = str.find(symbol);
+    }
+}
+
 const string GetStartArgs()
 {
     string str = "";
@@ -48,7 +65,8 @@ const string GetStartArgs()
 
     while (!linesstack.empty())
     {
-        const string line = linesstack.top();
+        auto line = linesstack.top();
+        DeleteSpacesInLine(line);
         linesstack.pop();
 
         //пропускаю закомментированные строки или неправильные строки (в которых нет знака =) или FALSE
@@ -60,9 +78,9 @@ const string GetStartArgs()
         //возможно лучше делать проверку на + и - с пробелом, но если ни в одной команде нет ни + не -, то проще не менять
         //if (eqright.find('+') != STRINGNPOS || eqright.find('-') != STRINGNPOS /*|| eqright.find('=') != STRINGNPOS*/) continue; //закомментил проверку на второй знак =. Хз, надо его или нет
 
-        const string eqleft = line.substr(0, equalpos);
+        const auto eqleft = line.substr(0, equalpos);
 
-        for (string word : argsminus)
+        for (auto word : argsminus)
         {
             if (eqleft != word) continue;
             str += ('-' + eqleft + ' ');
@@ -96,26 +114,34 @@ const string GetStartArgs()
 
 string port = "";
 string windowtitle1 = "";
-void StartServer(char** argv)
+void StartServer()
 {
-    string name = argv[0];
-    auto backslash = name.rfind("\\");
-    if (backslash != STRINGNPOS) name = name.substr(backslash + 1);
-
-    setlocale(LC_ALL, "english");
-
     auto adminargsstack = FileLinesToStack("adminargs.txt");
-    const string affinity = adminargsstack.top(); adminargsstack.pop();
-    port = adminargsstack.top(); adminargsstack.pop();
+
+    string additionalargs = adminargsstack.top(); adminargsstack.pop(); DeleteSpacesInLine(additionalargs);
+
+    auto port = adminargsstack.top(); adminargsstack.pop(); DeleteSpacesInLine(port);
+    /*try
+    {
+        port = to_string(stoi(port));
+    }
+    catch (const exception& e)
+    {
+        system("echo wrong port");
+        system("pause");
+        throw exception("wrong port");
+    }*/
+
+    auto name = adminargsstack.top(); adminargsstack.pop(); DeleteSpacesInLine(name);
 
     windowtitle1 = name + " server watchdog";
     const string start = ("@echo off\ncls\necho Protecting srcds from crashes...\ntitle " + windowtitle1 + "\n:srcds\necho (%date% %time%) srcds started.\n");
-    const string prestartargs = (start + "cd ./server\nstart /wait /high /min /affinity " + affinity + " srcds.exe -nocrashdialog -console -tickrate 20 -autoupdate -game garrysmod -port " + port + " ");
+    const string prestartargs = (start + "cd ./server\nstart /wait " + additionalargs + " srcds.exe -nocrashdialog -console -tickrate 20 -autoupdate -game garrysmod -port " + port + " ");
     const string end = "\necho (%date% %time%) WARNING: srcds closed or crashed, restarting.\ngoto srcds";
 
-    const string startargs = GetStartArgs();
+    const auto startargs = GetStartArgs();
 
-    const string batcommand = (prestartargs + startargs + end);
+    const auto batcommand = (prestartargs + startargs + end);
 
 
     ofstream f("start.bat");
@@ -162,11 +188,11 @@ void CheckServerInOnline()
 
 }
 
-int main(int argc, char** argv)
+int main()
 {
     bool notprogramend = true;
 
-    StartServer(argv);
+    StartServer();
 
     thread t([&notprogramend]() {while (notprogramend) CheckServerInOnline();});
     t.detach();
