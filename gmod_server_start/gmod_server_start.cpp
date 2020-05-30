@@ -178,6 +178,10 @@ int main(int argc, char** argv)
 
         notprogramend = false;
         t.~thread();
+        const string command = string("taskkill /F /FI ") + '"' + "WINDOWTITLE eq " + windowtitle1 + '"' + " /T";
+        system("echo Stopping server...");
+        system(command.c_str());
+        system("pause");
     }
 
     return 0;
