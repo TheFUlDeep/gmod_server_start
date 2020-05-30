@@ -66,7 +66,7 @@ void AddArgs(const string &line, const string &eqleft, const size_t &equalpos, c
     char plus = '+';
     if (!isplus) plus = '-';
     str += (plus + eqleft + ' ');
-    if (eqright.find("TRUE") != 0)
+    if (!(eqright.find("TRUE") == 0 && eqright.length() == 4))
     {
         if (isplus && word == "sv_setsteamaccount")//word == "sv_setsteamaccount уже подразумевает, что isplus == true, но пускай вначале быстро проверится бул, а потом уже стринг
         {
