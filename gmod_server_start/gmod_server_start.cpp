@@ -57,6 +57,30 @@ void RemoveSymbolFromString(string &str, const char &symbol)
     }
 }
 
+void AddArgs(const string &line, const string &eqleft, const size_t &equalpos, const char *word, string &str, bool isplus = false)
+{
+    if (eqleft != word) return;
+    auto eqright = line.substr(equalpos + 1); DeleteSpacesInLine(eqright);
+    if ((eqright.find("FALSE") == 0 && eqright.length() == 5) || eqright.find(' ') != STRINGNPOS || eqright.find('\t') != STRINGNPOS) return;
+
+    char plus = '+';
+    if (!isplus) plus = '-';
+    str += (plus + eqleft + ' ');
+    if (eqright.find("TRUE") != 0)
+    {
+        if (isplus && word == "sv_setsteamaccount")//word == "sv_setsteamaccount уже подразумевает, что isplus == true, но пускай вначале быстро проверится бул, а потом уже стринг
+        {
+            if (eqright.length() != 32)
+            {
+                cout << "wrong sv_setsteamaccount\n";
+                system("pause");
+                throw exception("wrong sv_setsteamaccount");
+            }
+        }
+        str += (eqright + ' ');
+    }
+}
+
 const string GetStartArgs()
 {
     string str = "";
@@ -70,7 +94,7 @@ const string GetStartArgs()
         linesstack.pop();
 
         //пропускаю закомментированные строки или неправильные строки (в которых нет знака =) или FALSE
-        if (line.front() == '#' || line.find("=FALSE") != STRINGNPOS || line.find('+') != STRINGNPOS || line.find('-') != STRINGNPOS) continue;
+        if (line.front() == '#' || line.find('+') != STRINGNPOS || line.find('-') != STRINGNPOS) continue;
         const auto equalpos = line.find('=');
         if (equalpos == STRINGNPOS) continue;
 
@@ -80,34 +104,9 @@ const string GetStartArgs()
         auto eqleft = line.substr(0, equalpos); DeleteSpacesInLine(eqleft);
         if (eqleft.find(' ') != STRINGNPOS || eqleft.find('\t') != STRINGNPOS) continue;
 
-        for (auto word : argsminus)
-        {
-            if (eqleft != word) continue;
-            str += ('-' + eqleft + ' ');
-            if (line.find("=TRUE") == STRINGNPOS) str += (line.substr(equalpos + 1) + ' ');
-        }
+        for (auto word : argsminus) AddArgs(line, eqleft, equalpos, word, str);
 
-        for (auto word : argsplus)
-        {
-            if (eqleft != word) continue;
-            str += ('+' + eqleft + ' ');
-            if (line.find("=TRUE") == STRINGNPOS)
-            {
-                auto eqright = line.substr(equalpos + 1); DeleteSpacesInLine(eqright);
-                if (eqright.find(' ') != STRINGNPOS || eqright.find('\t') != STRINGNPOS) continue;
-
-                if (word == "sv_setsteamaccount")
-                {
-                    if (eqright.length() != 32)
-                    {
-                        cout << "wrong sv_setsteamaccount\n";
-                        system("pause");
-                        throw exception("wrong sv_setsteamaccount");
-                    }
-                }
-                str += (eqright + ' ');
-            }
-        }
+        for (auto word : argsplus) AddArgs(line, eqleft, equalpos, word, str, true);
 
     }
     
