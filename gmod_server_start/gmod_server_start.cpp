@@ -2,25 +2,24 @@
 #include <fstream>
 #include <string>
 #include <stack>
-#include <strstream>
+//#include <strstream>
 
 #include <chrono>
 #include <thread>
 
 
-#define _WIN32_WINNT 0x0A00
-#define BOOST_DATE_TIME_NO_LIB
-#define BOOST_REGEX_NO_LIB
+//#define _WIN32_WINNT 0x0A00
+//#define BOOST_DATE_TIME_NO_LIB
+//#define BOOST_REGEX_NO_LIB
 
-#include <boost/asio.hpp>
+//#define _SILENCE_CXX17_C_HEADER_DEPRECATION_WARNING
 
+//i userd this https://stackoverflow.com/questions/53861300/how-do-you-properly-install-libcurl-for-use-in-visual-studio-2017
+//THANK YOU!!111!11!!
 
-#include <boost/beast.hpp>
-#include <boost/asio/connect.hpp>
-#include <boost/asio/ip/tcp.hpp>
+#include "cpr/cpr.h"
 
 using namespace std;
-namespace http = boost::beast::http;
 
 typedef stack<string> argsstack;
 const auto STRINGNPOS = string::npos;
@@ -70,11 +69,24 @@ const string GetStartArgs()
             if (line.find("=TRUE") == STRINGNPOS) str += (line.substr(equalpos + 1) + ' ');
         }
 
-        for (string word : argsplus)
+        for (auto word : argsplus)
         {
             if (eqleft != word) continue;
             str += ('+' + eqleft + ' ');
-            if (line.find("=TRUE") == STRINGNPOS) str += (line.substr(equalpos + 1) + ' ');
+            if (line.find("=TRUE") == STRINGNPOS)
+            {
+                const auto eqright = line.substr(equalpos + 1);
+                if (word == "sv_setsteamaccount")
+                {
+                    if (eqright.length() != 32)
+                    {
+                        cout << "wrong sv_setsteamaccount\n";
+                        system("pause");
+                        throw exception("wrong sv_setsteamaccount");
+                    }
+                }
+                str += (eqright + ' ');
+            }
         }
 
     }
@@ -120,111 +132,53 @@ void StartServer(char** argv)
     //-condebug
 }
 
-const string GetMyIP()
-{
-    ostringstream os;
-    boost::asio::ip::tcp::iostream stream("httpbin.org", "http");
-    stream << "GET /ip HTTP/1.1\r\nHost: httpbin.org\r\nConnection: close\r\n\r\n";
-    os << stream.rdbuf();
-    string str = os.str();
-
-    auto originpos = str.find("origin");
-    if (originpos != STRINGNPOS)
-    {
-        str = str.substr(originpos + 10);
-        auto secondpos = str.find('"');
-        str = str.substr(0, secondpos);
-        return str;
-    }
-    return "";
-}
 
 char bad_responses = 0;
-
 void CheckServerInOnline()
 {
     this_thread::sleep_for(std::chrono::seconds(60));
 
-    /*
-    boost::asio::ip::tcp::iostream stream("api.steampowered.com", "http");
-    stream << "GET /ip HTTP/1.1\r\nHost: api.steampowered.com\r\nConnection: close\r\n\r\n";
-    cout << stream.rdbuf();
-    */
+    const auto myip = cpr::Get(cpr::Url{ "https://ipv4bot.whatismyipaddress.com/" }).text;
+    if (myip.length() < 7) return;
 
-    auto myip = GetMyIP();
-    if (myip == "") return;
-    string fulladdr = myip + ":" + port;
+    const string fulladdr = myip + ":" + port;
 
-    const std::string host = "api.steampowered.com";
-    const std::string target = "/ISteamApps/GetServersAtAddress/v1/?addr=" + fulladdr;
+    const auto str = cpr::Get(cpr::Url{ "https://api.steampowered.com/ISteamApps/GetServersAtAddress/v1/?addr=" + fulladdr }).text;
 
-    // I/O контекст, необходимый для всех I/O операций
-    boost::asio::io_context ioc;
-
-    // Resolver для определения endpoint'ов
-    boost::asio::ip::tcp::resolver resolver(ioc);
-    // Tcp сокет, использующейся для соединения
-    boost::asio::ip::tcp::socket socket(ioc);
-
-    // Резолвим адрес и устанавливаем соединение
-    boost::asio::connect(socket, resolver.resolve(host, "80"));
-
-    // Дальше необходимо создать HTTP GET реквест с указанием таргета
-    http::request<http::string_body> req(http::verb::get, target, 11);
-    // Задаём поля HTTP заголовка
-    req.set(http::field::host, host);
-    req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
-
-    // Отправляем реквест через приконекченный сокет
-    http::write(socket, req);
-
-    // Часть, отвечающая за чтение респонса
+ 
+    if (str.find(fulladdr) == STRINGNPOS)
     {
-        boost::beast::flat_buffer buffer;
-        http::response<http::dynamic_body> res;
-        http::read(socket, buffer, res);
-
-        ostringstream os;
-        os << res;
-        string str = os.str();
-
-        if (str.find(fulladdr) == STRINGNPOS)
+        bad_responses++;
+        if (bad_responses == 5)
         {
-            bad_responses++;
-            if (bad_responses == 5)
-            {
-                string command = string("taskkill /F /FI ") + '"' + "WINDOWTITLE eq " + windowtitle1 + '"' + " /T";
-                system("echo (%date% %time%) server didnt rersponse for 5 times. Restarting...");
-                system(command.c_str());
-                system("start start.bat");
-                bad_responses = 0;
-            }
+            const string command = string("taskkill /F /FI ") + '"' + "WINDOWTITLE eq " + windowtitle1 + '"' + " /T";
+            system("echo (%date% %time%) server didnt rersponse for 5 times. Restarting...");
+            system(command.c_str());
+            system("start start.bat");
+            bad_responses = 0;
         }
-        else bad_responses = 0;
     }
-    // Закрываем соединение
-    socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
+    else bad_responses = 0;
 
 }
 
 int main(int argc, char** argv)
 {
     bool notprogramend = true;
+
     StartServer(argv);
 
-    thread t([&notprogramend]() 
+    thread t([&notprogramend]() {while (notprogramend) CheckServerInOnline();});
+    t.detach();
+
+    while (notprogramend)
     {
-            while (notprogramend)
-            {
-                char s;
-                cin >> s;
-                if (s == 's') notprogramend = false;
-            }
-    });
+        char s = getchar();
+        if (s != 's') continue;
 
-    while (notprogramend) CheckServerInOnline();
-
-    t.join();
+        notprogramend = false;
+        t.~thread();
+    }
 
     return 0;
 }
