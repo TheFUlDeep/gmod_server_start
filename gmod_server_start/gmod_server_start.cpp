@@ -122,6 +122,8 @@ void StartServer()
 
     auto additionalargs = adminargsstack.top(); adminargsstack.pop(); DeleteSpacesInLine(additionalargs);
 
+    auto tickrate = adminargsstack.top(); adminargsstack.pop(); DeleteSpacesInLine(additionalargs);
+
     port = adminargsstack.top(); adminargsstack.pop(); DeleteSpacesInLine(port);
     /*try
     {
@@ -138,7 +140,7 @@ void StartServer()
 
     windowtitle1 = name + " server watchdog";
     const string start = ("@echo off\ncls\ncd ./server\necho Protecting srcds from crashes...\ntitle " + windowtitle1 + "\n:srcds\necho (%date% %time%) srcds started.\n");
-    const string prestartargs = (start + "start /wait " + additionalargs + " srcds.exe -nocrashdialog -console -tickrate 20 -autoupdate -game garrysmod -port " + port + " ");
+    const string prestartargs = (start + "start /wait " + additionalargs + " srcds.exe -nocrashdialog -console -tickrate " + tickrate + " -autoupdate -game garrysmod -port " + port + " ");
     const string end = "\necho (%date% %time%) WARNING: srcds closed or crashed, restarting.\ngoto srcds";
 
     const auto startargs = GetStartArgs();
