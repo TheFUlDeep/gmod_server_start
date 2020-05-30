@@ -61,14 +61,14 @@ void AddArgs(const string &line, const string &eqleft, const size_t &equalpos, c
 {
     if (eqleft != word) return;
     auto eqright = line.substr(equalpos + 1); DeleteSpacesInLine(eqright);
-    if ((eqright.find("FALSE") == 0 && eqright.length() == 5) || eqright.find(' ') != STRINGNPOS || eqright.find('\t') != STRINGNPOS) return;
+    if (eqright == "FALSE" || eqright.find(' ') != STRINGNPOS || eqright.find('\t') != STRINGNPOS) return;
 
     char plus = '+';
     if (!isplus) plus = '-';
     str += (plus + eqleft + ' ');
-    if (!(eqright.find("TRUE") == 0 && eqright.length() == 4))
+    if (eqright != "TRUE")
     {
-        if (isplus && word == "sv_setsteamaccount")//word == "sv_setsteamaccount уже подразумевает, что isplus == true, но пускай вначале быстро проверится бул, а потом уже стринг
+        if (isplus && string(word) == "sv_setsteamaccount")//word == "sv_setsteamaccount уже подразумевает, что isplus == true, но пускай вначале быстро проверится бул, а потом уже стринг
         {
             if (eqright.length() != 32)
             {
