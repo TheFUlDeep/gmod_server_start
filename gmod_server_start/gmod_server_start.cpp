@@ -70,15 +70,15 @@ const string GetStartArgs()
         linesstack.pop();
 
         //пропускаю закомментированные строки или неправильные строки (в которых нет знака =) или FALSE
-        if (line[0] == '#' || line.find("=FALSE") != STRINGNPOS || line.find(' ') != STRINGNPOS || line.find('+') != STRINGNPOS || line.find('-') != STRINGNPOS) continue;
+        if (line.front() == '#' || line.find("=FALSE") != STRINGNPOS || line.find('+') != STRINGNPOS || line.find('-') != STRINGNPOS) continue;
         const auto equalpos = line.find('=');
         if (equalpos == STRINGNPOS) continue;
 
         //если в правой части есть + или -, то игнорить эту строку (для безопасности, чтобы нельзя было дописать свои аргументы)
         //возможно лучше делать проверку на + и - с пробелом, но если ни в одной команде нет ни + не -, то проще не менять
-        //if (eqright.find('+') != STRINGNPOS || eqright.find('-') != STRINGNPOS /*|| eqright.find('=') != STRINGNPOS*/) continue; //закомментил проверку на второй знак =. Хз, надо его или нет
 
-        const auto eqleft = line.substr(0, equalpos);
+        auto eqleft = line.substr(0, equalpos); DeleteSpacesInLine(eqleft);
+        if (eqleft.find(' ') != STRINGNPOS || eqleft.find('\t') != STRINGNPOS) continue;
 
         for (auto word : argsminus)
         {
@@ -93,7 +93,9 @@ const string GetStartArgs()
             str += ('+' + eqleft + ' ');
             if (line.find("=TRUE") == STRINGNPOS)
             {
-                const auto eqright = line.substr(equalpos + 1);
+                auto eqright = line.substr(equalpos + 1); DeleteSpacesInLine(eqright);
+                if (eqright.find(' ') != STRINGNPOS || eqright.find('\t') != STRINGNPOS) continue;
+
                 if (word == "sv_setsteamaccount")
                 {
                     if (eqright.length() != 32)
@@ -108,7 +110,8 @@ const string GetStartArgs()
         }
 
     }
-
+    
+    str.pop_back();
     return str;
 }
 
@@ -118,7 +121,7 @@ void StartServer()
 {
     auto adminargsstack = FileLinesToStack("adminargs.txt");
 
-    string additionalargs = adminargsstack.top(); adminargsstack.pop(); DeleteSpacesInLine(additionalargs);
+    auto additionalargs = adminargsstack.top(); adminargsstack.pop(); DeleteSpacesInLine(additionalargs);
 
     auto port = adminargsstack.top(); adminargsstack.pop(); DeleteSpacesInLine(port);
     /*try
@@ -135,8 +138,8 @@ void StartServer()
     auto name = adminargsstack.top(); adminargsstack.pop(); DeleteSpacesInLine(name);
 
     windowtitle1 = name + " server watchdog";
-    const string start = ("@echo off\ncls\necho Protecting srcds from crashes...\ntitle " + windowtitle1 + "\n:srcds\necho (%date% %time%) srcds started.\n");
-    const string prestartargs = (start + "cd ./server\nstart /wait " + additionalargs + " srcds.exe -nocrashdialog -console -tickrate 20 -autoupdate -game garrysmod -port " + port + " ");
+    const string start = ("@echo off\ncls\ncd ./server\necho Protecting srcds from crashes...\ntitle " + windowtitle1 + "\n:srcds\necho (%date% %time%) srcds started.\n");
+    const string prestartargs = (start + "start /wait " + additionalargs + " srcds.exe -nocrashdialog -console -tickrate 20 -autoupdate -game garrysmod -port " + port + " ");
     const string end = "\necho (%date% %time%) WARNING: srcds closed or crashed, restarting.\ngoto srcds";
 
     const auto startargs = GetStartArgs();
@@ -170,7 +173,6 @@ void CheckServerInOnline()
     const string fulladdr = myip + ":" + port;
 
     const auto str = cpr::Get(cpr::Url{ "https://api.steampowered.com/ISteamApps/GetServersAtAddress/v1/?addr=" + fulladdr }).text;
-
  
     if (str.find(fulladdr) == STRINGNPOS)
     {
