@@ -42,9 +42,30 @@ const char* argsplus[]{ "sv_setsteamaccount","host_workshop_collection","maxplay
 
 void DeleteSpacesInLine(string& line)
 {
-    while (line.front() == ' ' || line.front() == '\t') line.erase(0,1);
+    while (line.front() == ' ' || line.front() == '\t')
+    {
+        const auto strlen = line.length();
+        size_t len = 1;
 
-    while (line.back() == ' ' || line.back() == '\t') line.pop_back();
+        //если идут пропуски подряд, то вырезать их сразу вместе
+        while ((len < strlen) && (line[len] == ' ' || line[len] == '\t')) len++;
+        line.erase(0, len);
+    }
+
+    while (line.back() == ' ' || line.back() == '\t')
+    {
+        const auto strlen = line.length();
+        auto pos = strlen - 2;
+        size_t len = 1;
+
+        //если идут пропуски подряд, то вырезать их сразу вместе
+        while ((pos > 0) && (line[pos] == ' ' || line[pos] == '\t')) 
+        {
+            len++;
+            pos--;
+        }
+        line.erase(pos+1, len);
+    }
 }
 
 void RemoveSymbolFromString(string &str, const char &symbol)
@@ -52,7 +73,12 @@ void RemoveSymbolFromString(string &str, const char &symbol)
     auto pos = str.find(symbol);
     while (pos != STRINGNPOS)
     {
-        str.erase(pos, 1);
+        const auto strlen = str.length();
+        size_t len = 1;
+
+        //если идут одинаковые символы подряд, то вырезать их сразу вместе
+        while ((pos + len < strlen) && str[pos + len] == symbol) len++;
+        str.erase(pos, len);
         pos = str.find(symbol);
     }
 }
@@ -123,7 +149,7 @@ void StartServer()
 
     auto additionalargs = adminargsstack.top(); adminargsstack.pop(); DeleteSpacesInLine(additionalargs);
 
-    auto tickrate = adminargsstack.top(); adminargsstack.pop(); DeleteSpacesInLine(additionalargs);
+    auto tickrate = adminargsstack.top(); adminargsstack.pop(); DeleteSpacesInLine(tickrate);
 
     port = adminargsstack.top(); adminargsstack.pop(); DeleteSpacesInLine(port);
     /*try
