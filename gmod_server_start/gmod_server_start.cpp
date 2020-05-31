@@ -186,7 +186,7 @@ void CheckServerInOnline()
         {
             system("echo (%date% %time%) server didnt rersponse for 5 times. Restarting...");
             system(processkillcommand.c_str());
-            system("start start.bat");
+            StartServer();
             bad_responses = 0;
         }
     }
@@ -219,7 +219,7 @@ int main()
             system("echo (%date% %time%) Restarting server...");
             system(processkillcommand.c_str());
             bad_responses = 0;
-            system("start start.bat");
+            StartServer();
         }
     }
 
