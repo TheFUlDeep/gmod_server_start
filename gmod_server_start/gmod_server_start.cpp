@@ -116,6 +116,7 @@ const string GetStartArgs()
 
 string port = "";
 string windowtitle1 = "";
+string processkillcommand = "";
 void StartServer()
 {
     auto adminargsstack = FileLinesToStack("adminargs.txt");
@@ -139,6 +140,9 @@ void StartServer()
     auto name = adminargsstack.top(); adminargsstack.pop(); DeleteSpacesInLine(name);
 
     windowtitle1 = name + " server watchdog";
+
+    processkillcommand = string("taskkill /F /FI ") + '"' + "WINDOWTITLE eq " + windowtitle1 + '"' + " /T";
+
     const string start = ("@echo off\ncls\ncd ./server\necho Protecting srcds from crashes...\ntitle " + windowtitle1 + "\n:srcds\necho (%date% %time%) srcds started.\n");
     const string prestartargs = (start + "start /wait " + additionalargs + " srcds.exe -nocrashdialog -console -tickrate " + tickrate + " -autoupdate -game garrysmod -port " + port + " ");
     const string end = "\necho (%date% %time%) WARNING: srcds closed or crashed, restarting.\ngoto srcds";
@@ -180,9 +184,8 @@ void CheckServerInOnline()
         bad_responses++;
         if (bad_responses == 5)
         {
-            const string command = string("taskkill /F /FI ") + '"' + "WINDOWTITLE eq " + windowtitle1 + '"' + " /T";
             system("echo (%date% %time%) server didnt rersponse for 5 times. Restarting...");
-            system(command.c_str());
+            system(processkillcommand.c_str());
             system("start start.bat");
             bad_responses = 0;
         }
@@ -203,14 +206,21 @@ int main()
     while (notprogramend)
     {
         char s = getchar();
-        if (s != 's') continue;
-
-        notprogramend = false;
-        t.~thread();
-        const string command = string("taskkill /F /FI ") + '"' + "WINDOWTITLE eq " + windowtitle1 + '"' + " /T";
-        system("echo Stopping server...");
-        system(command.c_str());
-        system("pause");
+        if (s == 's')
+        {
+            notprogramend = false;
+            t.~thread();
+            system("echo Stopping server...");
+            system(processkillcommand.c_str());
+            system("pause");
+        }
+        else if (s == 'r')
+        {
+            system("echo Restarting server...");
+            system(processkillcommand.c_str());
+            bad_responses = 0;
+            system("start start.bat");
+        }
     }
 
     return 0;
