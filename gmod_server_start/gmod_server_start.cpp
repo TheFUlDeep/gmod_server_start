@@ -59,7 +59,7 @@ void DeleteSpacesInLine(string& line)
         size_t len = 1;
 
         //если идут пропуски подряд, то вырезать их сразу вместе
-        while ((pos > 0) && (line[pos] == ' ' || line[pos] == '\t')) 
+        while ((pos < strlen) && (line[pos] == ' ' || line[pos] == '\t')) 
         {
             len++;
             pos--;
