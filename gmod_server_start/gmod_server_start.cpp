@@ -210,13 +210,13 @@ int main()
         {
             notprogramend = false;
             t.~thread();
-            system("echo Stopping server...");
+            system("echo (%date% %time%) Stopping server...");
             system(processkillcommand.c_str());
             system("pause");
         }
         else if (s == 'r')
         {
-            system("echo Restarting server...");
+            system("echo (%date% %time%) Restarting server...");
             system(processkillcommand.c_str());
             bad_responses = 0;
             system("start start.bat");
